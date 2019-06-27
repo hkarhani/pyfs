@@ -1,7 +1,7 @@
 # pyFS Module 
 Simple Wrapper for Forescout WebAPIs/DEX Module 
 
-I've Dockerized this module to simplfy deployment - you just need a host with docker which have reachability to your Forescout CounterACT running the WebAPIs / DEX Module. Ensure you have allowed the IP fo the host running  docker to access both WebAPIs / DEX Modules. 
+I've Dockerized this module to simplify deployment - you just need a host with docker which has reachability to your Forescout CounterACT running the WebAPIs / DEX Module. Ensure you have allowed the IP fo the host running  docker to access both WebAPIs / DEX Modules. You can customize the lists name in the Notebook later to match your lists configured in CounterACT. 
 
 ## 1. Initialization on the Docker host 
 
