@@ -1,8 +1,8 @@
 ---
-counterActIP: 10.0.0.200 	# Forescout EM / CT IP
-Web-API:					# WebAPI Settings 
-    User: lab 				# Username of WebAPI 
-    Password: strongpass 	# Password of WebAPI 
-DEX-Web-Serivces: 			# DEX Web Services Settings 
-    User: lab@lab 			# User of DEX Account in format: <name>@<username> 
-    Password: strongpass 	# Password of DEX Account 
+counterActIP: 10.0.0.200 # Forescout EM / CT IP
+Web-API:                 # WebAPI Settings 
+    User: lab            # Username of WebAPI 
+    Password: strongpass # Password of WebAPI 
+DEX-Web-Serivces:        # DEX Web Services Settings
+    User: lab@lab        # User of DEX Account in format: <name>@<username> 
+    Password: strongpass # Password of DEX Account 
