@@ -8,7 +8,8 @@ I've Dockerized this module to simplfy deployment - you just need a host with do
  Pull the code from GitHub via git clone command:
  
 ```
-git clone git@github.com:hkarhani/pyfs.git 
+git clone https://github.com/hkarhani/pyfs.git
+
 ```
 
 ## 2. Create your own Docker container 
@@ -17,6 +18,7 @@ Change directory to pyfs and Build your local container.
 
 ```
 cd pyfs 
+
 docker build -t pyfsContainer .
 ```
 
@@ -35,6 +37,7 @@ Run container and choose the port to expose Jupyter Notebook on (in the followin
 
 ```
 $ docker run -d --name pyfs -p 8899:8888 pyfsContainer 
+
 a1530186072b867d8c2f16a586b23ec868862e5e07cf7d7c1d0df17712a6f666
 ```
 
@@ -42,6 +45,7 @@ Verify that the container is running in background using docker ps command:
 
 ```
 $ docker ps 
+
 CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                               NAMES
 a1530186072b        pyfsContainer       "/bin/sh -c '/bin/sh…"   3 seconds ago       Up 2 seconds        0.0.0.0:8899->8888/tcp              pyfs
 ```
@@ -50,7 +54,9 @@ a1530186072b        pyfsContainer       "/bin/sh -c '/bin/sh…"   3 seconds ago
 
 Open your Browser and browse to the Host IP with port 8899 
 
+```
 http://<docker-host-ip>:8899/
+```
 
 Voila! 
 
@@ -63,17 +69,17 @@ Edit fsconfig.yml YALM file to match your CounterACT IP / username / Pass for bo
 ```
 ---
 counterActIP: 10.0.0.200 	# Forescout EM / CT IP
-Web-API:					# WebAPI Settings 
-    User: lab 				# Username of WebAPI 
+Web-API:			# WebAPI Settings 
+    User: lab 			# Username of WebAPI 
     Password: strongpass 	# Password of WebAPI 
-DEX-Web-Serivces: 			# DEX Web Services Settings 
-    User: lab@lab 			# User of DEX Account in format: <name>@<username> 
+DEX-Web-Serivces: 		# DEX Web Services Settings 
+    User: lab@lab 		# User of DEX Account in format: <name>@<username> 
     Password: strongpass 	# Password of DEX Account 
 ```
 
 ## 6. Load your pyFS-Lists notebook and Enjoy!
 
- Via NoteBook Web interface click on pyFS-Lists.pynb notebook to begin executing the Cells (shift-Enter to execute the cells)
+ Via NoteBook Web interface click on pyFS-Lists.ipynb notebook to begin executing the Cells (shift-Enter to execute the cells)
  
  You can edit the lists name as created by your CounterACT (please refer to each section comments) in each cell before executing it. 
 
@@ -84,6 +90,7 @@ Stop the Docker Container:
 
 ```
 $ docker stop pyfs
+
 pyfs
 ```
 
@@ -91,6 +98,7 @@ Remove the Docker Container:
 
 ```
 $ docker rm pyfs 
+
 pyfs
 ```
 
@@ -99,7 +107,7 @@ Remove the created Docker Container:
 ```
 $ docker rmi pyfsContainer 
 
-Untagged: testcont:latest
+Untagged: pyfsContainer:latest
 Deleted: sha256:d8cbfda2879c6031847950d321ba2a4d4389c79b1a50b2895a719c509e66ffe8
 Deleted: sha256:c3713797120b7a1340b5d7f4bbb2d55575546a84e77398e2de224c3d721cf0b0
 Deleted: sha256:0d7dd2b0d2d781cd74b15ef14afb6f6eacee1c545fd10cc8a4b0316845518d9d
