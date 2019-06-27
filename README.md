@@ -79,12 +79,12 @@ DEX-Web-Serivces: 		# DEX Web Services Settings
 
 ## 6. Load your pyFS-Lists notebook and Enjoy!
 
- Via NoteBook Web interface click on pyFS-Lists.ipynb notebook to begin executing the Cells (shift-Enter to execute the cells)
+ Via NoteBook Web interface click on pyFS-Lists.ipynb notebook to begin executing the Cells (shift-Enter).
  
- You can edit the lists name as created by your CounterACT (please refer to each section comments) in each cell before executing it. 
+ You can edit the lists names as created in CounterACT (please refer to each section comments) in each cell before executing it. 
 
 
-## 7. Stopping & Removing the Ctonainer 
+## 7. Stopping & Removing the Container & Image 
 
 Stop the Docker Container: 
 
@@ -113,3 +113,5 @@ Deleted: sha256:c3713797120b7a1340b5d7f4bbb2d55575546a84e77398e2de224c3d721cf0b0
 Deleted: sha256:0d7dd2b0d2d781cd74b15ef14afb6f6eacee1c545fd10cc8a4b0316845518d9d
 Deleted: sha256:78db07ebdad90d37b53b0c878c34a3f86386eec68adbdec06c43f732997cb5b0
 ```
+
+No Worries - Whatever credentials you configured will be removed with the container. 
