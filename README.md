@@ -6,9 +6,9 @@ I've Dockerized this module to simplify deployment - you just need a host with d
 An automated Build of this container can be pulled directly from dockerhub (skipping steps 1-3): 
 
 ```
-$docker pull hkarhani/pyfs 
+$ docker pull hkarhani/pyfs 
 
-$docker run -d --name pyfs -p 8899:8888 hkarhani/pyfs
+$ docker run -d --name pyfs -p 8899:8888 hkarhani/pyfs
 ```
 
 ## 1. Initialization on the Docker host 
