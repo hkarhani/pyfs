@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import os
 import sys
+import re
+import pandas as pd
 
 import yaml
 import json
@@ -10,6 +12,14 @@ import datetime as dt
 import shutil
 
 FSAPI_API_VERSION = "2.0"
+
+def gethref(x):
+    """Extracts href from _links field"""
+    return x['self']['href']
+
+def gettemplated(x):
+    """Extracts templated from _links field"""
+    return x['self']['templated']
 
 class pyFS(object):
     """ForeScout WebAPI / DEX Web Services wrapper Class:
@@ -47,7 +57,7 @@ class pyFS(object):
         self.cacheLogin = dt.timedelta(minutes=5)
         self.cacheTime1 = dt.timedelta(hours=1)
         self.cacheTime2 = dt.timedelta(hours=24)
-
+        self.hostfields = None 
         self.endpoints = {}
         self.hosts = []
     
@@ -71,7 +81,7 @@ class pyFS(object):
             self.loggedin = False
             return False
         
-    def postDEX(self, epip, _property, _value): 
+    def postDEX(self, epip, _property, _value, debug=False): 
         """Posts via auth (result of initDEX) to CounterACT for Endpoint IP: 
             epip, using property: _property and value: _value."""
         
@@ -95,9 +105,15 @@ class pyFS(object):
         
         r = requests.post(postURL, headers=headers, auth=(self.DEXuser, self.DEXpassword), data=post_data, verify=False)
         
+        if debug: 
+            print(f"URL: {postURL}")
+            print(f"Headers: {headers}")
+            print(f"POST Data: {post_data}")
+            print(f"Response: {r}")
+            
         return r.status_code == 200, r.content.decode('utf-8')
 
-    def postCDEX(self, epip, _property, _Obj): 
+    def postCDEX(self, epip, _property, _Obj, debug=False): 
         """Posts via auth (result of initDEX) to CounterACT for Endpoint IP: epip, using Composite property: _property and object: _Obj"""
         postURL = "https://%s/fsapi/niCore/Hosts" % self.counterAct
         headers = {'Content-Type': 'application/xml', 'Accept': 'application/xml'}
@@ -130,6 +146,13 @@ class pyFS(object):
 
         post_data = post_data_header + post_data_cprop + post_data_footer
         r = requests.post(postURL, headers=headers,auth=(self.DEXuser, self.DEXpassword), data=post_data, verify=False)
+        
+        if debug: 
+            print(f"URL: {postURL}")
+            print(f"Headers: {headers}")
+            print(f"POST Data: {post_data}")
+            print(f"Response: {r}")
+            
         return r.status_code == 200, r.content.decode('utf-8')
     
     def deleteDEX(self, epip, _property): 
@@ -284,21 +307,37 @@ class pyFS(object):
             
     
     def getHosts(self): 
-        """Retrieves list of active hosts from CounterACT webAPI."""
+        """Retrieves list of active hosts from Forescout webAPI and returns a pandas DataFrame."""
+        
         if self.login(): 
             req = '%s/hosts'% self.baseAPI
             resp = requests.get(req, headers=self.headers, verify=False)
             if resp.status_code == 200: 
                 #print(resp.content)
                 jresp = json.loads(resp.content.decode('utf-8'))
-                self.hosts = jresp[u'hosts']
+                hosts = jresp[u'hosts']
                 self.hostsTimeStamp = dt.datetime.now()
-                return self.hosts 
+                # convert to Pandas
+                self.hostsdf = pd.DataFrame(hosts)
+                self.hosts = hosts
+                self.hostsdf['href'] = self.hostsdf["_links"].apply(gethref)
+                self.hostsdf['templated'] = self.hostsdf["_links"].apply(gettemplated)
+                self.hostsdf.drop('_links', inplace=True, axis=1)
+                return self.hostsdf 
             else: 
                 return None 
         else: 
             return None 
     
+    def checkHostField(self, prop):
+        hfDF = self.getHFdf()
+        
+        if prop in hfDF['name'].values:
+            return True 
+        else: 
+            return False
+            
+        
     def gethostsByProp(self, prop, val): 
         """Retrieves list of hosts with prop value equal to val from CounterACT webAPI."""
         if self.login(): 
@@ -308,12 +347,20 @@ class pyFS(object):
                 if resp.status_code == 200: 
                     #print(resp.content)
                     jresp = json.loads(resp.content.decode('utf-8'))
-                    return  jresp[u'hosts']
+                    hosts = jresp[u'hosts']
+                    hostsdf = pd.DataFrame(hosts)
+                    hostsdf['href'] = hostsdf["_links"].apply(gethref)
+                    hostsdf['templated'] = hostsdf["_links"].apply(gettemplated)
+                    hostsdf.drop('_links', inplace=True, axis=1)
+                    return hostsdf  
                 else: 
+                    print("Error Return Status Code != 200.")
                     return False
             else:
+                print(f"Error Property '{prop}' does not exist in Hostfields.")
                 return False
         else: 
+            print("Unable to Login!")
             return False 
         
     def gethostsByRules(self, rulesList): 
@@ -372,18 +419,22 @@ class pyFS(object):
         """Retrieves hostID from CounterACT webAPI based on host IP."""
         if len(self.hosts) == 0: 
             self.getHosts()
-        for host in self.hosts: 
-            if host[u'ip'] == hostip: # Enhancement: convert to normalized IP in future
-                return host[u'hostId']
+        _ret = self.hostsdf[self.hostsdf['ip']==hostip]
+        if len(_ret) == 1: 
+            return _ret.hostId.values[0] 
+        else: 
+            return None
         return None 
     
     def gethostIDbyMAC(self, hostmac):
         """Retrieves hostID from CounterACT webAPI based on host MAC Address."""
         if len(self.hosts) == 0: 
             self.getHosts() 
-        for host in self.hosts: 
-            if host[u'mac'] == hostmac: # Enhancement: convert to normalized MAC in future 
-                return host[u'hostId']
+        _ret = self.hostsdf[self.hostsdf['mac']==hostmac]
+        if len(_ret) == 1: 
+            return _ret.hostId.values[0] 
+        else: 
+            return None
         return None 
         
     def getHostByID(self, hostid): 
@@ -418,6 +469,146 @@ class pyFS(object):
         else: 
             return False, None
     
+    def nameFix(self, _name, fixName = True, debug=False):
+        if not fixName: 
+            return _name 
+        
+        specialCharacters = ['.','-', ' ']
+        _nameFix = _name
+        for _char in specialCharacters:        
+            if _name.find(_char) != -1: 
+                _nameFix = _nameFix.replace(_char, "_")
+        if debug: 
+            if not re.match(r'^[\d\_\w]+$', _nameFix):
+                print(_nameFix)
+        return _nameFix
+    
+    def getHFdf(self): 
+        if not self.hostfields:    
+            self.getAllHostFields()
+        df = pd.DataFrame(self.hostfields)
+        df.drop('_links', axis=1, inplace=True)
+        return df
+    
+    def getHFfilter(self, _filter=None, useLabel=False, useDescription=False):
+        df = self.getHFdf()
+        if not _filter: 
+            return df 
+        else: 
+            if not useLabel and not useDescription: 
+                return df[df['name'].str.contains(_filter, case=False)]
+            ndf = df.dropna()
+            df1 = ndf['name'].str.contains(_filter, case=False)
+            df2 = ndf['label'].str.contains(_filter, case=False)
+            df3 = ndf['description'].str.contains(_filter, case=False)
+            return ndf[df1 | (useLabel & df2) | (useDescription & df3)]
+    
+    def matchHF(self, _filter):
+        df = self.getHFdf()
+        seldf = df[df['name']==_filter]
+        if len(seldf) == 1: 
+            return seldf.iloc[0]
+        else: 
+            return None 
+    
+    def describeProps(self, props):
+        dfProps = pd.DataFrame()
+        for prop in list(props['fields'].keys()):
+            dfProps = dfProps.append(self.matchHF(prop))
+        return dfProps
+    
+    def detailProps(self, props):
+        hostDF = pd.DataFrame()
+        if 'fields' not in list(props.keys()):
+            print("Not a valid Properties object! no fields key!")
+            return None 
+        
+        fields = props['fields']
+        for prop in list(fields.keys()): 
+            propDF = self.matchHF(prop)
+            if self.getHFtype(prop) == 'string':
+                if type(fields[prop]) == type([]):
+                    for subProp in fields[prop]:
+                        if type(subProp) == type({}):
+                            instancePropDF = propDF.copy()
+                            instancePropDF['timestamp'] = subProp['timestamp']
+                            instancePropDF['value'] = subProp['value']
+                            hostDF = hostDF.append(instancePropDF)
+                elif type(fields[prop]) == type({}):
+                    propDF['timestamp'] = fields[prop]['timestamp']
+                    propDF['value'] = fields[prop]['value']
+                    hostDF = hostDF.append(propDF)
+            else: 
+                if type(fields[prop]) == type({}):
+                    propDF['timestamp'] = fields[prop]['timestamp']
+                    propDF['value'] = fields[prop]['value']
+                    hostDF = hostDF.append(propDF)
+        
+        return hostDF
+
+    
+    def getHFtype(self, _filter):
+        df = self.getHFdf()
+        seldf = df[df['name']==_filter]
+        if len(seldf) == 1: 
+            return seldf['type'].iloc[0]
+        else: 
+            print(f"field Name: {_filter} not found!")
+            return ""
+    
+    def getHFlabel(self, _filter):
+        df = self.getHFdf()
+        seldf = df[df['name']==_filter]
+        if len(seldf) == 1: 
+            return seldf['label'].iloc[0]
+        else: 
+            print(f"field Name: {_filter} not found!")
+            return ""
+        
+    def getHFdescription(self, _filter):
+        df = self.getHFdf()
+        seldf = df[df['name']==_filter]
+        if len(seldf) == 1: 
+            return seldf['description'].iloc[0]
+        else: 
+            print(f"field Name: {_filter} not found!")
+            return ""
+        
+    def getHFAVP(self, _filter = None, fixName = True, useLabel=False, useDescription=False, usedf= False, debug=False):
+        df = self.getHFdf()
+        obj = {}
+        if not _filter: 
+            for _name in df['name']:
+                obj[self.nameFix(_name, fixName)] = '{%s}'%_name
+        else:
+            _dfFiltered = df[df['name'].str.contains(_filter, case=False)]
+            if len(_dfFiltered)!= 0: 
+                for _name in _dfFiltered['name']: 
+                    obj[self.nameFix(_name, fixName)] = '{%s}'%_name
+            if debug: 
+                print(f'Object Length: {len(obj)} - with filtered Data on name')
+            if useLabel: 
+                ndf = df.dropna()
+                _dfFiltered = ndf[ndf['label'].str.contains(_filter, case=False)]
+                if len(_dfFiltered) != 0: 
+                    for _name in _dfFiltered['name']:
+                        obj[self.nameFix(_name, fixName)] = '{%s}'%_name
+                    if debug: 
+                        print(f'Object Length: {len(obj.keys())} - with filtered Data on Label')
+            if useDescription: 
+                ndf = df.dropna()
+                _dfFiltered = ndf[ndf['description'].str.contains(_filter, case=False)]
+                if len(_dfFiltered) !=0: 
+                    for _name in _dfFiltered['name']:
+                        obj[self.nameFix(_name, fixName)] = '{%s}'%_name  
+                    if debug: 
+                        print(f'Object Length: {len(obj.keys())} - with filtered Data on Description')
+        if not usedf: 
+            return obj
+        else: 
+            cObj = {'key': list(obj.keys()), 'value':[v for k,v in obj.items()]}
+            return pd.DataFrame(cObj)
+
     def getHostByMAC(self, hostmac): 
         """Retrieves host properties from CounterACT webAPI by hostmac."""
         if self.login(): 
@@ -435,3 +626,22 @@ class pyFS(object):
                 return False, None
         else: 
             return False, None
+    
+    def getHost(self, ip=None, mac=None, hostId=None):
+        """Retrieve Host Properties by: ip, mac or hostId. Eliminates the usage of individual functions"""
+        if not ip and not mac and not hostId:
+            print("Either ip, mac of hostId are needed to get Host details..")
+            return None 
+        if hostId: 
+            result, props = self.getHostByID(hostId)
+        elif mac: 
+            result, props = self.getHostByMAC(mac)
+        elif ip: 
+            result, props = self.getHostByIP(ip)
+
+        if result: 
+            hostDF = self.detailProps(props)
+            return hostDF
+        else: 
+            print("Error in retreiving host information..")
+            return None 
