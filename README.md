@@ -1,7 +1,7 @@
 # pyFS Module 
 Simple Wrapper for WebAPIs/DEX Module 
 
-I've Dockerized this module to simplify deployment - you just need a host with docker which has reachability to your appliance running the WebAPIs / DEX Module. Ensure you have allowed the IP fo the host running  docker to access both WebAPIs / DEX Modules. You can customize the lists name in the Notebook later to match your lists configured in CounterACT. 
+I've Dockerized this module to simplify deployment - you just need a host with docker which has reachability to your appliance running the WebAPIs / DEX Module. Ensure you have allowed the IP fo the host running  docker to access both WebAPIs / DEX Modules. You can customize the lists name in the Notebook later to match your lists configured in your platform . 
 
 An automated Build of this container can be pulled directly from dockerhub (skipping steps 1-3): 
 
@@ -72,7 +72,7 @@ Voila!
 
 Before loading the Sample pyFS-Lists Notebook - ensure you edit the fsconfig.yml file in Jupyter Notebook.
 
-Edit fsconfig.yml YALM file to match your CounterACT IP / username / Pass for both WebAPIs & DEX: 
+Edit fsconfig.yml YALM file to match your platform IP / username / Pass for both WebAPIs & DEX: 
 
 ```
 ---
@@ -89,7 +89,7 @@ DEX-Web-Serivces: 		# DEX Web Services Settings
 
  Via NoteBook Web interface click on pyFS-Lists.ipynb notebook to begin executing the Cells (shift-Enter).
  
- You can edit the lists names as created in CounterACT (please refer to each section comments) in each cell before executing it. 
+ You can edit the lists names as created in your platform (please refer to each section comments) in each cell before executing it. 
 
 
 ## 7. Stopping & Removing the Container & Image 
