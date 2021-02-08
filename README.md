@@ -1,7 +1,7 @@
 # pyFS Module 
-Simple Wrapper for Forescout WebAPIs/DEX Module 
+Simple Wrapper for WebAPIs/DEX Module 
 
-I've Dockerized this module to simplify deployment - you just need a host with docker which has reachability to your Forescout CounterACT running the WebAPIs / DEX Module. Ensure you have allowed the IP fo the host running  docker to access both WebAPIs / DEX Modules. You can customize the lists name in the Notebook later to match your lists configured in CounterACT. 
+I've Dockerized this module to simplify deployment - you just need a host with docker which has reachability to your appliance running the WebAPIs / DEX Module. Ensure you have allowed the IP fo the host running  docker to access both WebAPIs / DEX Modules. You can customize the lists name in the Notebook later to match your lists configured in CounterACT. 
 
 An automated Build of this container can be pulled directly from dockerhub (skipping steps 1-3): 
 
@@ -76,13 +76,13 @@ Edit fsconfig.yml YALM file to match your CounterACT IP / username / Pass for bo
 
 ```
 ---
-counterActIP: 10.0.0.200 	# Forescout EM / CT IP
+counterActIP: <ip-address> 	# Enter the IP-Address of your EM/CT
 Web-API:			# WebAPI Settings 
-    User: lab 			# Username of WebAPI 
-    Password: strongpass 	# Password of WebAPI 
+    User: <username> 			  # Username of WebAPI 
+    Password: <password> 	# Password of WebAPI 
 DEX-Web-Serivces: 		# DEX Web Services Settings 
-    User: lab@lab 		# User of DEX Account in format: <name>@<username> 
-    Password: strongpass 	# Password of DEX Account 
+    User:  <name>@<username>		# User of DEX Account in format: <name>@<username> 
+    Password: <password> 	# Password of DEX Account 
 ```
 
 ## 6. Load your pyFS-Lists notebook and Enjoy!
