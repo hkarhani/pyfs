@@ -22,7 +22,7 @@ def gettemplated(x):
     return x['self']['templated']
 
 class pyFS(object):
-    """WebAPI / DEX Web Services wrapper Class:
+    """ForeScout WebAPI / DEX Web Services wrapper Class:
     Attributes:
         fsConfigFile: default is 'fsconfig.yml' file 
         Config file should Contain IP, WebAPI User / Pass, DEX Web Services Account User / Pass.
